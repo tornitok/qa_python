@@ -2,28 +2,8 @@ import pytest
 
 from main import BooksCollector
 
-# класс TestBooksCollector объединяет набор тестов, которыми мы покрываем наше приложение BooksCollector
-# обязательно указывать префикс Test
-class TestBooksCollector:
 
-    # # пример теста:
-    # # обязательно указывать префикс test_
-    # # дальше идет название метода, который тестируем add_new_book_
-    # # затем, что тестируем add_two_books - добавление двух книг
-    # def test_add_new_book_add_two_books(self):
-    #     # создаем экземпляр (объект) класса BooksCollector
-    #     collector = BooksCollector()
-    #
-    #     # добавляем две книги
-    #     collector.add_new_book('Гордость и предубеждение и зомби')
-    #     collector.add_new_book('Что делать, если ваш кот хочет вас убить')
-    #
-    #     # проверяем, что добавилось именно две
-    #     # словарь books_rating, который нам возвращает метод get_books_rating, имеет длину 2
-    #     assert len(collector.get_books_rating()) == 2
-    #
-    # # напиши свои тесты ниже
-    # # чтобы тесты были независимыми в каждом из них создавай отдельный экземпляр класса BooksCollector()
+class TestBooksCollector:
 
     @pytest.mark.parametrize("book_name, genre", [
         ("1984", "Фантастика"),
@@ -51,13 +31,20 @@ class TestBooksCollector:
         collector.set_book_genre('Горе от ума', 'Комедии')
         assert collector.get_book_genre('Горе от ума') == 'Комедии'
 
-
-    def test_get_books_with_specific_genre(self, collector):
+    def test_get_books_with_specific_genre_filters_correctly(self, collector):
         collector.add_new_book('Горе от ума')
         collector.set_book_genre('Горе от ума', 'Комедии')
+
+        collector.add_new_book('Война и мир')
+        collector.set_book_genre('Война и мир', 'Романы')
+
+        collector.add_new_book('1984')
+        collector.set_book_genre('1984', 'Фантастика')
+
         result = collector.get_books_with_specific_genre('Комедии')
-        assert 'Горе от ума' in result
-        assert isinstance(result, list) and len(result) == 1
+        assert result == ['Горе от ума']
+        assert 'Война и мир' not in result
+        assert '1984' not in result
 
     @pytest.mark.parametrize("book_name, genre", [
         ("1984", "Фантастика"),
@@ -72,21 +59,29 @@ class TestBooksCollector:
         assert book_name in books_genre
         assert books_genre[book_name] == genre
 
-    @pytest.mark.parametrize("book_name, genre, should_be_included", [
-        ("Маша и медведь", "Мультфильмы", True),
-        ("Смех сквозь слёзы", "Комедии", True),
-        ("Оно", "Ужасы", False),
-        ("Шерлок Холмс", "Детективы", False),
-    ])
-    def test_get_books_for_children_filters_correctly(self, collector, book_name, genre, should_be_included):
-        collector.add_new_book(book_name)
-        collector.set_book_genre(book_name, genre)
+    def test_get_books_for_children_includes_multfilm(self, collector):
+        collector.add_new_book("Маша и медведь")
+        collector.set_book_genre("Маша и медведь", "Мультфильмы")
         result = collector.get_books_for_children()
-        if should_be_included:
-            assert book_name in result
-        else:
-            assert book_name not in result
+        assert "Маша и медведь" in result
 
+    def test_get_books_for_children_includes_comedy(self, collector):
+        collector.add_new_book("Смех сквозь слёзы")
+        collector.set_book_genre("Смех сквозь слёзы", "Комедии")
+        result = collector.get_books_for_children()
+        assert "Смех сквозь слёзы" in result
+
+    def test_get_books_for_children_excludes_horror(self, collector):
+        collector.add_new_book("Оно")
+        collector.set_book_genre("Оно", "Ужасы")
+        result = collector.get_books_for_children()
+        assert "Оно" not in result
+
+    def test_get_books_for_children_excludes_detective(self, collector):
+        collector.add_new_book("Шерлок Холмс")
+        collector.set_book_genre("Шерлок Холмс", "Детективы")
+        result = collector.get_books_for_children()
+        assert "Шерлок Холмс" not in result
 
     @pytest.mark.parametrize("book_name, genre", [
         ("1984", "Фантастика"),
@@ -135,16 +130,16 @@ class TestBooksCollector:
 
 
     def test_get_list_of_favorites_books_returns_current_list(self, collector):
-        books = [
-            ("Книга 1", "Фантастика"),
-            ("Книга 2", "Комедии"),
-        ]
-        for name, genre in books:
-            collector.add_new_book(name)
-            collector.set_book_genre(name, genre)
-            collector.add_book_in_favorites(name)
+        collector.add_new_book("Книга 1")
+        collector.set_book_genre("Книга 1", "Фантастика")
+        collector.add_book_in_favorites("Книга 1")
+
+        collector.add_new_book("Книга 2")
+        collector.set_book_genre("Книга 2", "Комедии")
+        collector.add_book_in_favorites("Книга 2")
+
         favorites = collector.get_list_of_favorites_books()
-        assert set(favorites) == {"Книга 1", "Книга 2"}
+        assert favorites == ["Книга 1", "Книга 2"]
 
 
 
