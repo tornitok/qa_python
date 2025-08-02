@@ -1,16 +1,22 @@
 import pytest
 
+from conftest import collector
 from main import BooksCollector
 
 
 class TestBooksCollector:
+
+    def test_add_new_book_one_book_added(self, collector):
+        collector.add_new_book('Алиса в Стране Чудес')
+        genre = collector.get_book_genre('Алиса в Стране Чудес')
+        assert genre == ''
 
     @pytest.mark.parametrize("book_name, genre", [
         ("1984", "Фантастика"),
         ("It", "Ужасы"),
         ("Шерлок Холмс", "Детективы"),
     ])
-    def test_set_book_genre_valid_book_and_genre(self, book_name, genre):
+    def test_set_book_genre_valid_book_and_genre(self, collector, book_name, genre):
         collector = BooksCollector()
         collector.add_new_book(book_name)
         collector.set_book_genre(book_name, genre)
@@ -20,8 +26,7 @@ class TestBooksCollector:
         ("Dracula", "Романтика"),
         ("Tom & Jerry", "Приключения"),
     ])
-    def test_set_book_genre_invalid_genre(self, book_name, invalid_genre):
-        collector = BooksCollector()
+    def test_set_book_genre_invalid_genre(self, collector, book_name, invalid_genre):
         collector.add_new_book(book_name)
         collector.set_book_genre(book_name, invalid_genre)
         assert collector.books_genre[book_name] == ""
@@ -59,7 +64,7 @@ class TestBooksCollector:
         assert book_name in books_genre
         assert books_genre[book_name] == genre
 
-    def test_get_books_for_children_includes_multfilm(self, collector):
+    def test_get_books_for_children_includes_cartoon(self, collector):
         collector.add_new_book("Маша и медведь")
         collector.set_book_genre("Маша и медведь", "Мультфильмы")
         result = collector.get_books_for_children()
@@ -140,7 +145,3 @@ class TestBooksCollector:
 
         favorites = collector.get_list_of_favorites_books()
         assert favorites == ["Книга 1", "Книга 2"]
-
-
-
-
